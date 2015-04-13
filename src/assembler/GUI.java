@@ -162,9 +162,13 @@ public class GUI extends JFrame implements ActionListener{
 //						} else {
 //							break;
 //						}
-//					} else if (p.commandType().equals("A_COMMAND")) { // handle A_COMMANDs
+//					} else if (p.commandType().equals("DATA_PROCESS_COMMAND")) { // handle A_COMMANDs
 //																		
-//						String machine = "0";
+//						int machine = "0";
+//						int condition = Code.condition(p.condition()); // get codes from Code module
+//						int opcode = Code.opcode(p.opcode());
+//						int sbit = Code.jump(p.jump());
+//						
 //						try {
 //							int loc = Integer.parseInt(p.symbol()); // get integer
 //																	
@@ -176,7 +180,8 @@ public class GUI extends JFrame implements ActionListener{
 //									machine += "0";
 //								}
 //							}
-//							machine += binary;
+//							machine = dataInstruction(shiftLeft(condition, 28 ), shiftLeft(opcode,20));
+//						
 //						} catch (NumberFormatException nfe) { // if symbol is not an integer, check symbol table
 //															
 //							if (st.contains(p.symbol())) {
@@ -210,9 +215,9 @@ public class GUI extends JFrame implements ActionListener{
 //					} else if (p.commandType().equals("C_COMMAND")) { // handle C_COMMANDs
 //																		
 //						String machine = "111"; // start string with "111"
-//						String comp = Code.comp(p.comp()); // get codes from Code module
-//						String dest = Code.dest(p.dest());
-//						String jump = Code.jump(p.jump());
+//						int condition = Code.condition(p.comp()); // get codes from Code module
+//						int opcode = Code.opcode(p.dest());
+//						int sbit = Code.jump(p.jump());
 //						
 //						if (!(dest.equals("NG") || comp.equals("NG") || jump
 //								.equals("NG"))) { // if no invalid codes
@@ -283,4 +288,7 @@ public class GUI extends JFrame implements ActionListener{
 		return instruction;
 	}
 	
+	public int dataInstruction(int condition,int i , int opcode, int s, int rn , int rd, int operand2 ){
+		return condition + i + opcode + s + rn + rd + operand2;
+	}
 }

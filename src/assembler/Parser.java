@@ -41,6 +41,7 @@ public class Parser {
 
     public String commandType() {
     	
+    	int space = currentCommand.indexOf(" ");
     	String command = currentCommand.substring(0, 3);
     	
     	if(command.equals("AND") || command.equals("EOR") || command.equals("SUB") || command.equals("RSB") ||
@@ -77,14 +78,32 @@ public class Parser {
     }
 
     // parse symbol
-    public String symbol() {
+    public String condition() {
         if(currentCommand.charAt(0) == '@') {
             return currentCommand.substring(1, currentCommand.length());
         } else if(currentCommand.charAt(0) == '(') {
             return currentCommand.substring(1, currentCommand.length()-1);
         } else return "INVALID INSTRUCTION";
     }
-
+    
+    //parse opcode
+    public String opcode() {
+        if(currentCommand.charAt(0) == '@') {
+            return currentCommand.substring(1, currentCommand.length());
+        } else if(currentCommand.charAt(0) == '(') {
+            return currentCommand.substring(1, currentCommand.length()-1);
+        } else return "INVALID INSTRUCTION";
+    }
+    
+  //parse S
+    public String sbit() {
+        if(currentCommand.charAt(0) == '@') {
+            return currentCommand.substring(1, currentCommand.length());
+        } else if(currentCommand.charAt(0) == '(') {
+            return currentCommand.substring(1, currentCommand.length()-1);
+        } else return "INVALID INSTRUCTION";
+    }
+    
     // parse destination
     public String dest() {
         int eq = currentCommand.indexOf('=');
@@ -110,6 +129,15 @@ public class Parser {
         if(semi > 0) {
             return currentCommand.substring(semi + 1);
         } else return "null";
+    }
+    
+ // parse symbol
+    public String symbol() {
+        if(currentCommand.charAt(0) == '@') {
+            return currentCommand.substring(1, currentCommand.length());
+        } else if(currentCommand.contains(":")) {							//check for labels
+            return currentCommand.substring(1, currentCommand.length()-1);
+        } else return "INVALID INSTRUCTION";
     }
 
     public void removeWhitespace(File input) throws FileNotFoundException {
