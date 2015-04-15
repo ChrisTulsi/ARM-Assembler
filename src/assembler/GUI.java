@@ -31,8 +31,6 @@ public class GUI extends JFrame implements ActionListener{
 	
 	public GUI(){
 		
-		
-
 		Container contentPane = getContentPane();
 	    contentPane.setLayout(new FlowLayout());
 		
@@ -98,7 +96,6 @@ public class GUI extends JFrame implements ActionListener{
 				
 				}
 				
-		
 	}
 
 	private void about() {
@@ -121,7 +118,7 @@ public class GUI extends JFrame implements ActionListener{
             //This is where a real application would open the file.
 			int extension = input.getName().indexOf('.');
 			String fileName = input.getName().substring(0, extension);
-		    output = new File(input.getParent(), fileName + ".hack");
+		    output = new File(input.getParent(), fileName + ".out");
             
 		    try {
 				FileReader reader = new FileReader(input.getAbsolutePath());
@@ -141,130 +138,107 @@ public class GUI extends JFrame implements ActionListener{
 	
 	private void translate() {
 		
-//			try {
-//																				
-//				PrintWriter writeOut = new PrintWriter(output);
-//
-//				Parser p = new Parser(input); // create Parser
-//
-//				SymbolTable st = new SymbolTable(p); // create SymbolTable
-//
-//				int currentInstruction = 0; // set current line number to 0
-//
-//				// while(true) loop includes last instruction, unlike
-//				// while(p.hasMoreCommands())
-//				while (true) {
-//					if (p.commandType().equals("L_COMMAND")) { // ignore L_COMMANDs
-//															
-//						if (p.hasMoreCommands()) {
-//							p.advance();
-//							continue;
-//						} else {
-//							break;
-//						}
-//					} else if (p.commandType().equals("DATA_PROCESS_COMMAND")) { // handle A_COMMANDs
-//																		
-//						int machine = "0";
-//						int condition = Code.condition(p.condition()); // get codes from Code module
-//						int opcode = Code.opcode(p.opcode());
-//						int sbit = Code.jump(p.jump());
-//						
-//						try {
-//							int loc = Integer.parseInt(p.symbol()); // get integer
-//																	
-//							String binary = Integer.toBinaryString(loc); // convert to binary String
-//																			
-//							if (binary.length() < 15) { // add leading zeros if necessary
-//														 
-//								for (int i = 0; i < 15 - binary.length(); i++) {
-//									machine += "0";
-//								}
-//							}
-//							machine = dataInstruction(shiftLeft(condition, 28 ), shiftLeft(opcode,20));
-//						
-//						} catch (NumberFormatException nfe) { // if symbol is not an integer, check symbol table
-//															
-//							if (st.contains(p.symbol())) {
-//								String binary = Integer.toBinaryString(st
-//										.getAddress(p.symbol())); // if in symbol table, retrieve
-//																
-//								if (binary.length() < 15) { // value and convert to binary string
-//															 
-//									for (int i = 0; i < 15 - binary.length(); i++) {
-//										machine += "0";
-//									}
-//								}
-//								machine += binary;
-//							} else { // if not in symbol table
-//								st.addEntry(p.symbol()); // add current symbol (next available memory
-//														
-//								String binary = Integer.toBinaryString(st
-//										.getAddress(p.symbol())); // handled by Symbol Table Module)
-//																
-//								if (binary.length() < 15) { // convert value to binary String
-//									
-//									for (int i = 0; i < 15 - binary.length(); i++) {
-//										machine += "0";
-//									}
-//								}
-//								machine += binary;
-//							}
-//						}
-//						writeOut.println(machine); //write one instruction to
-//						currentInstruction++;
-//					} else if (p.commandType().equals("C_COMMAND")) { // handle C_COMMANDs
-//																		
-//						String machine = "111"; // start string with "111"
-//						int condition = Code.condition(p.comp()); // get codes from Code module
-//						int opcode = Code.opcode(p.dest());
-//						int sbit = Code.jump(p.jump());
-//						
-//						if (!(dest.equals("NG") || comp.equals("NG") || jump
-//								.equals("NG"))) { // if no invalid codes
-//							machine += comp + dest + jump; // add all codes to final string
-//							
-//							writeOut.println(machine);
-//							currentInstruction++;
-//						
-//						} else { // handles invalid codes
-//							System.out.println("Error at instruction "
-//									+ currentInstruction + " of .asm file.");
-//							System.out
-//									.println("Resulting .hack file is incomplete.");
-//							writeOut.close();
-//							return;
-//						}
-//					} else { // handles invalid instructions
-//						System.out.println("Error at instruction "
-//								+ currentInstruction + " of .asm file.");
-//						System.out
-//								.println("Resulting .hack file is incomplete.");
-//						writeOut.close();
-//						return;
-//					}
-//
-//					if (p.hasMoreCommands()) { // advance if more commands
-//						p.advance();
-//					} else { // break if last command
-//						break;
-//					}
-//				}
-//
-//				writeOut.close();
-//				
-//				try {
-//					FileReader reader = new FileReader(output.getAbsolutePath());
-//					BufferedReader br2 = new BufferedReader(reader);
-//					binaryCode.read(br2, null);
-//					br2.close();
-//					
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//
-//			} catch (Exception e) {
-//				System.out.println("Error: " + e.getMessage());
-//			}
+			try {
+																				
+				PrintWriter writeOut = new PrintWriter(output);
+
+				Parser p = new Parser(input); // create Parser
+
+				SymbolTable st = new SymbolTable(p); // create SymbolTable
+
+				int currentInstruction = 0; // set current line number to 0
+
+				// while(true) loop includes last instruction, unlike
+				// while(p.hasMoreCommands())
+				while (true) {
+					if (p.commandType().equals("L_COMMAND")) { // ignore L_COMMANDs
+															
+						if (p.hasMoreCommands()) {
+							p.advance();
+							continue;
+						} else {
+							break;
+						}
+					} else if (p.commandType().equals("DATA_PROCESS_COMMAND")) { // handle A_COMMANDs
+																		
+						int machine = 0;
+						int condition = Code.condition(p.condition()); // get codes from Code module
+						int opcode = Code.opcode(p.opcode());
+						//int sbit = Code.jump(p.jump());
+						
+						try {
+							int loc = Integer.parseInt(p.symbol()); // get integer
+																	
+							machine = dataInstruction(leftShift(condition, 28 ), leftShift(opcode,20),0,0,0,0,0);//create 32bit biary
+						
+						} catch (NumberFormatException nfe) { // if symbol is not an integer, check symbol table
+															
+							if (st.contains(p.symbol())) {
+								int binary = st.getAddress(p.symbol()); // if in symbol table, retrieve
+																
+								machine += binary;
+							} else { // if not in symbol table
+								st.addEntry(p.symbol()); // add current symbol (next available memory
+														
+								int binary = st.getAddress(p.symbol()); // handled by Symbol Table Module)
+																
+								machine += binary;
+							}
+						}
+						writeOut.println(machine); //write one instruction to
+						currentInstruction++;
+						} else if (p.commandType().equals("C_COMMAND")) { // handle C_COMMANDs
+																		
+						int machine = 111; // start string with "111"
+						int condition = Code.condition(p.comp()); // get codes from Code module
+						int opcode = Code.opcode(p.dest());
+						//int sbit = Code.jump(p.jump());
+						
+						if (!(condition == 2 || opcode == 2 )) { // if no invalid codes
+							machine += opcode + opcode; //add all codes to final string
+							
+							writeOut.println(machine);
+							currentInstruction++;
+						
+						} else { // handles invalid codes
+							System.out.println("Error at instruction "
+									+ currentInstruction + " of .asm file.");
+							System.out
+									.println("Resulting .hack file is incomplete.");
+							writeOut.close();
+							return;
+						}
+					} else { // handles invalid instructions
+						System.out.println("Error at instruction "
+								+ currentInstruction + " of .asm file.");
+						System.out
+								.println("Resulting .hack file is incomplete.");
+						writeOut.close();
+						return;
+					}
+
+					if (p.hasMoreCommands()) { // advance if more commands
+						p.advance();
+					} else { // break if last command
+						break;
+					}
+				}
+
+				writeOut.close();
+				
+				try {
+					FileReader reader = new FileReader(output.getAbsolutePath());
+					BufferedReader br2 = new BufferedReader(reader);
+					binaryCode.read(br2, null);
+					br2.close();
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			} catch (Exception e) {
+				System.out.println("Error: " + e.getMessage());
+			}
 
 	}
 	
