@@ -1,5 +1,6 @@
 package assembler;
 
+import java.math.BigInteger;
 import java.util.Hashtable;
 
 public class SymbolTable {
@@ -17,16 +18,29 @@ public class SymbolTable {
     }
 
     private void initialize() {
-        for(int i = 0; i <= 15; i++) {
-            String key = "R" + i;
-            symbols.put(key, i);
-        }
+    	
+    	symbols.put("r0", 0);
+    	symbols.put("r1", 1);
+    	symbols.put("r2", 10);
+    	symbols.put("r3", 10);
+    	symbols.put("r4", 100);
+    	symbols.put("r5", 101);
+    	symbols.put("r6", 110);
+    	symbols.put("r7", 111);
+    	symbols.put("r8", 1000);
+    	symbols.put("r9", 1001);
+    	symbols.put("r10", 1010);
+    	symbols.put("r11", 1011);
+    	symbols.put("r12", 1100);
+    	symbols.put("r13", 1101);
+    	symbols.put("r14", 1110);
+    	symbols.put("r15", 1111);
     }
 
     private void firstPass() {
         while(true) {
             if(p.commandType().equals("L_COMMAND")) {
-                symbols.put(p.symbol(), currentLineNumber);
+//                symbols.put(p.symbol(), currentLineNumber);
             } else currentLineNumber++;
 
             if(p.hasMoreCommands()) {
@@ -40,7 +54,7 @@ public class SymbolTable {
 
     public void addEntry(String symbol) {
         symbols.put(symbol, nextAvailMem);
-        nextAvailMem++;
+        nextAvailMem+=nextAvailMem;
     }
 
     public boolean contains(String symbol) {
@@ -48,6 +62,14 @@ public class SymbolTable {
     }
 
     public int getAddress(String symbol) {
+    	
+    	if(symbol.contains("#")){
+    	
+    		BigInteger stat = new BigInteger(symbol.substring(symbol.indexOf(1), symbol.length()-1));
+    		
+    		return stat.intValue();
+    	}
+    	
         return symbols.get(symbol);
     }
 }

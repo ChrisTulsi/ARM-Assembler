@@ -41,19 +41,19 @@ public class Code {
         if(d.equals("AND")) {
             return 0000;
         } else if(d.equals("EOR")) {
-            return 0001;
+            return 1;
         } else if(d.equals("SUB")) {
-            return 0010;
+            return 10;
         } else if(d.equals("RSB")) {
-            return 0011;
+            return 11;
         } else if(d.equals("ADD")) {
-            return 0100;
+            return 100;
         } else if(d.equals("ADC")) {
-            return 0101;
+            return 101;
         } else if(d.equals("SBC")) {
-            return 0110;
+            return 110;
         } else if(d.equals("RSC")) {
-            return 0111;
+            return 111;
         } else if(d.equals("TST")) {
             return 1000;
         } else if(d.equals("TEQ")) {
@@ -73,21 +73,4 @@ public class Code {
         } else return 2;
     }
 	
-	
-//	public static String branch(String d){
-//		
-//		if(d.equals("B")){
-//			return "";
-//		} else if(d.equals("BL")) {
-//            return "";
-//		} else if(d.equals("BLX")) {
-//            return "";
-//		} else if(d.equals("BX")) {
-//            return "";
-//		} else if(d.equals("BXJ")) {
-//            return "";
-//		} else return "NG";
-//	}
-//	
-
 }

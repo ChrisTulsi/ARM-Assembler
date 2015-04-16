@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -71,7 +72,7 @@ public class GUI extends JFrame implements ActionListener{
 		
 		fileChooser = new JFileChooser();
 		
-		setTitle("Assembler");
+		setTitle("ARM Assembler");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setSize(1000,550);
 		setResizable(false);
@@ -151,8 +152,9 @@ public class GUI extends JFrame implements ActionListener{
 				// while(true) loop includes last instruction, unlike
 				// while(p.hasMoreCommands())
 				while (true) {
+					
 					if (p.commandType().equals("L_COMMAND")) { // ignore L_COMMANDs
-															
+						
 						if (p.hasMoreCommands()) {
 							p.advance();
 							continue;
@@ -160,59 +162,43 @@ public class GUI extends JFrame implements ActionListener{
 							break;
 						}
 					} else if (p.commandType().equals("DATA_PROCESS_COMMAND")) { // handle A_COMMANDs
-																		
-						int machine = 0;
-						int condition = Code.condition(p.condition()); // get codes from Code module
-						int opcode = Code.opcode(p.opcode());
-						//int sbit = Code.jump(p.jump());
 						
-						try {
-							int loc = Integer.parseInt(p.symbol()); // get integer
-																	
-							machine = dataInstruction(leftShift(condition, 28 ), leftShift(opcode,20),0,0,0,0,0);//create 32bit biary
+						BigInteger machine = BigInteger.ZERO;
+						BigInteger sum = BigInteger.ZERO;
+						int opcode = Code.opcode(p.opcode()); // get codes from Code module
+						int condition = Code.condition(p.condition());
+						int i = 0;
+						int s = p.sbit();
+						//int rn = st.getAddress(p.symbol());
+						//int rd = st.getAddress(p.symbol());
+						int operand2 = st.getAddress(p.symbol());
 						
-						} catch (NumberFormatException nfe) { // if symbol is not an integer, check symbol table
-															
-							if (st.contains(p.symbol())) {
-								int binary = st.getAddress(p.symbol()); // if in symbol table, retrieve
-																
-								machine += binary;
-							} else { // if not in symbol table
-								st.addEntry(p.symbol()); // add current symbol (next available memory
-														
-								int binary = st.getAddress(p.symbol()); // handled by Symbol Table Module)
-																
-								machine += binary;
-							}
-						}
-						writeOut.println(machine); //write one instruction to
-						currentInstruction++;
-						} else if (p.commandType().equals("C_COMMAND")) { // handle C_COMMANDs
-																		
-						int machine = 111; // start string with "111"
-						int condition = Code.condition(p.comp()); // get codes from Code module
-						int opcode = Code.opcode(p.dest());
-						//int sbit = Code.jump(p.jump());
 						
-						if (!(condition == 2 || opcode == 2 )) { // if no invalid codes
-							machine += opcode + opcode; //add all codes to final string
-							
-							writeOut.println(machine);
+						if (opcode != 2 ) { // if no invalid codes
+								
+							sum = machine.add(leftShift(condition,28));
+							machine = sum;
+							sum = machine.add(leftShift(opcode,21));
+							machine = sum;
+							sum = machine.add(leftShift(s,20));
+		
+							writeOut.println(sum);
 							currentInstruction++;
-						
+							
 						} else { // handles invalid codes
-							System.out.println("Error at instruction "
-									+ currentInstruction + " of .asm file.");
-							System.out
-									.println("Resulting .hack file is incomplete.");
-							writeOut.close();
-							return;
+								System.out.println("Error at instruction "
+										+ currentInstruction + " of .asm file.");
+								System.out
+										.println("Resulting .hack file is incomplete.");
+								writeOut.close();
+								return;
 						}
-					} else { // handles invalid instructions
+					
+					}	else { // handles invalid instructions
 						System.out.println("Error at instruction "
 								+ currentInstruction + " of .asm file.");
 						System.out
-								.println("Resulting .hack file is incomplete.");
+								.println("Resulting .out file is incomplete.");
 						writeOut.close();
 						return;
 					}
@@ -223,9 +209,9 @@ public class GUI extends JFrame implements ActionListener{
 						break;
 					}
 				}
-
+					
 				writeOut.close();
-				
+			
 				try {
 					FileReader reader = new FileReader(output.getAbsolutePath());
 					BufferedReader br2 = new BufferedReader(reader);
@@ -235,21 +221,26 @@ public class GUI extends JFrame implements ActionListener{
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-
+				
+		
 			} catch (Exception e) {
 				System.out.println("Error: " + e.getMessage());
 			}
-
+				
 	}
 	
-	public int leftShift(int instruction, int num){
+	public BigInteger leftShift(int instruction, int num){
+		
+		BigInteger big = new BigInteger(Integer.toString(instruction));
+		BigInteger sum = BigInteger.ZERO;
 		
 		for (int i = 0; i < num; i++) {
 			
-			instruction *= 10;
+			sum = big.multiply(BigInteger.TEN);
+			big = sum;
 		}
 		
-		return instruction;
+		return sum;
 	}
 	
 	public int rightShift(int instruction, int num){
