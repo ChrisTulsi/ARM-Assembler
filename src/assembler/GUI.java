@@ -25,10 +25,10 @@ public class GUI extends JFrame implements ActionListener{
 	private JMenuBar menuBar;
 	private JMenu fileMenu, help;
 	private JMenuItem open, exit, about;
-	private JTextArea assemblyCode, binaryCode;
+	private JTextArea assemblyCode, binaryCode, hexCode;
 	private JButton translate;
 	private JFileChooser fileChooser;
-	private File input, output;
+	private File input, output, hexOut;
 	
 	public GUI(){
 		
@@ -58,10 +58,13 @@ public class GUI extends JFrame implements ActionListener{
 		about.addActionListener(this);
 		help.add(about);
 		
-		assemblyCode = new JTextArea(30,38);
-		binaryCode = new JTextArea(30,38);
+		assemblyCode = new JTextArea(30,30);
+		binaryCode = new JTextArea(30,30);
+		hexCode = new JTextArea(30,30);
 		assemblyCode.setEditable(false);
 		binaryCode.setEditable(false);
+		hexCode.setEditable(false);
+		
 		
 		translate = new JButton("Translate");
 		translate.addActionListener(this);
@@ -69,12 +72,13 @@ public class GUI extends JFrame implements ActionListener{
 		add(new JScrollPane(assemblyCode));
 		add(translate);
 		add(new JScrollPane(binaryCode));
+		add(new JScrollPane(hexCode));
 		
 		fileChooser = new JFileChooser();
 		
 		setTitle("ARM Assembler");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setSize(1000,550);
+		setSize(1200,550);
 		setResizable(false);
 		setVisible(true);
 		
@@ -120,6 +124,7 @@ public class GUI extends JFrame implements ActionListener{
 			int extension = input.getName().indexOf('.');
 			String fileName = input.getName().substring(0, extension);
 		    output = new File(input.getParent(), fileName + ".out");
+		    hexOut = new File(input.getParent(), fileName + ".hex"); 
             
 		    try {
 				FileReader reader = new FileReader(input.getAbsolutePath());
@@ -142,6 +147,7 @@ public class GUI extends JFrame implements ActionListener{
 			try {
 																				
 				PrintWriter writeOut = new PrintWriter(output);
+				PrintWriter writeHex = new PrintWriter(hexOut);
 
 				Parser p = new Parser(input); // create Parser
 
@@ -161,28 +167,48 @@ public class GUI extends JFrame implements ActionListener{
 						} else {
 							break;
 						}
-					} else if (p.commandType().equals("DATA_PROCESS_COMMAND")) { // handle A_COMMANDs
+					} else if (p.commandType().equals("DATA_PROCESS_COMMAND")) { // handle DATA_PROCESS_COMMANDs
 						
 						BigInteger machine = BigInteger.ZERO;
 						BigInteger sum = BigInteger.ZERO;
-						int opcode = Code.opcode(p.opcode()); // get codes from Code module
-						int condition = Code.condition(p.condition());
-						int i = 0;
-						int s = p.sbit();
-						//int rn = st.getAddress(p.symbol());
-						//int rd = st.getAddress(p.symbol());
-						int operand2 = st.getAddress(p.symbol());
 						
+						int condition = Code.condition(p.condition());
+						int i = p.ibit();
+						int opcode = Code.opcode(p.opcode()); // get codes from Code module
+						int s = p.sbit();
+						int rn = st.getAddress(p.rn());
+						int rd = 0;
+						int operand2 = 0;
+						
+						if(p.twoOperand()){
+							rd = st.getAddress(p.rd());
+						}else{
+							rd = st.getAddress(p.rd());
+							operand2 = st.getAddress(p.operand2());
+						}
 						
 						if (opcode != 2 ) { // if no invalid codes
-								
+							
+							machine = sum;
 							sum = machine.add(leftShift(condition,28));
 							machine = sum;
-							sum = machine.add(leftShift(opcode,21));
+							sum = machine.add(leftShift(i,21));
 							machine = sum;
-							sum = machine.add(leftShift(s,20));
-		
-							writeOut.println(sum);
+							sum = machine.add(leftShift(opcode,20));
+							machine = sum;
+							sum = machine.add(leftShift(s,19));
+							machine = sum;
+							sum = machine.add(leftShift(rn,15));
+							machine = sum;
+							sum = machine.add(leftShift(rd,11));
+							machine = sum;
+							sum = machine.add(leftShift(operand2,0));
+							machine = sum;
+							
+							String bin = appendString(sum);
+							
+							writeOut.println(bin);
+							writeHex.println(binToHex(bin));
 							currentInstruction++;
 							
 						} else { // handles invalid codes
@@ -191,15 +217,44 @@ public class GUI extends JFrame implements ActionListener{
 								System.out
 										.println("Resulting .hack file is incomplete.");
 								writeOut.close();
+								writeHex.close();
 								return;
 						}
-					
+					}else if (p.commandType().equals("BRANCH_COMMAND")) {//handles Branch command
+						
+						BigInteger machine = BigInteger.ZERO;
+						BigInteger sum = BigInteger.ZERO;
+						
+						int condition = Code.condition(p.condition());
+						int constant = 101;
+						int lBit = 0;
+						int offset = 0;
+						
+						
+//						machine = sum;
+//						sum = machine.add(leftShift(condition,28));
+//						machine = sum;
+//						sum = machine.add(leftShift(constant,21));
+//						machine = sum;
+//						sum = machine.add(leftShift(lBit,20));
+//						machine = sum;
+//						sum = machine.add(leftShift(offset,19));
+//						machine = sum;
+//						
+//						String bin = appendString(sum);
+//						
+//						writeOut.println(bin);
+//						writeHex.println(binToHex(bin));
+						
+						currentInstruction++;
+						
 					}	else { // handles invalid instructions
 						System.out.println("Error at instruction "
 								+ currentInstruction + " of .asm file.");
 						System.out
 								.println("Resulting .out file is incomplete.");
 						writeOut.close();
+						writeHex.close();
 						return;
 					}
 
@@ -211,12 +266,17 @@ public class GUI extends JFrame implements ActionListener{
 				}
 					
 				writeOut.close();
-			
+				writeHex.close();
 				try {
 					FileReader reader = new FileReader(output.getAbsolutePath());
 					BufferedReader br2 = new BufferedReader(reader);
 					binaryCode.read(br2, null);
 					br2.close();
+					
+					FileReader reader2 = new FileReader(hexOut.getAbsolutePath());
+					BufferedReader br3 = new BufferedReader(reader2);
+					hexCode.read(br3, null);
+					br3.close();
 					
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -233,27 +293,52 @@ public class GUI extends JFrame implements ActionListener{
 		
 		BigInteger big = new BigInteger(Integer.toString(instruction));
 		BigInteger sum = BigInteger.ZERO;
+		int i = 0;
 		
-		for (int i = 0; i < num; i++) {
+		for (; i < num; i++) {
 			
 			sum = big.multiply(BigInteger.TEN);
 			big = sum;
 		}
 		
-		return sum;
+		return (i == 0)?big:sum;
 	}
 	
-	public int rightShift(int instruction, int num){
+	public BigInteger rightShift(int instruction, int num){
 		
-		for (int i = 0; i < num; i++) {
+		BigInteger big = new BigInteger(Integer.toString(instruction));
+		BigInteger sum = BigInteger.ZERO;
+		int i = 0;
+		
+		for (; i < num; i++) {
 			
-			instruction /= 10;
+			sum = big.divide(BigInteger.TEN);
+			big = sum;
 		}
 		
-		return instruction;
+		return (i == 0)?big:sum;
+	}
+	public String binToHex(String bin){
+		
+		String one= Integer.toHexString(Integer.parseInt(bin.substring(0, 4),2));
+		String two= Integer.toHexString(Integer.parseInt(bin.substring(4, 8),2));
+		String three= Integer.toHexString(Integer.parseInt(bin.substring(8, 12),2));
+		String four= Integer.toHexString(Integer.parseInt(bin.substring(12, 16),2));
+		String five= Integer.toHexString(Integer.parseInt(bin.substring(16, 20),2));
+		String six= Integer.toHexString(Integer.parseInt(bin.substring(20, 24),2));
+		String seven= Integer.toHexString(Integer.parseInt(bin.substring(24, 28),2));
+		String eight= Integer.toHexString(Integer.parseInt(bin.substring(28, 32),2));
+		
+		return one + two + three + four + five + six + seven + eight;
 	}
 	
-	public int dataInstruction(int condition,int i , int opcode, int s, int rn , int rd, int operand2 ){
-		return condition + i + opcode + s + rn + rd + operand2;
+	public String appendString(BigInteger machine){
+		String binary = machine.toString();
+		
+		while(binary.length() != 32){
+			binary = "0"+binary;
+		}
+		
+		return binary;
 	}
 }

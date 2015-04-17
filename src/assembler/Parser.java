@@ -50,7 +50,9 @@ public class Parser {
     	
     		return "DATA_PROCESS_COMMAND";
     	
-    	}	
+    	}	else if (command.startsWith("B")){
+    		return "BRANCH_INSTRUCTION";
+    	}
             return "INVALID INSTRUCTION";
         
     }
@@ -59,21 +61,25 @@ public class Parser {
     public String symbol() {
         if(currentCommand.endsWith(":")) {
             return currentCommand.substring(0, currentCommand.length()-1);
-        } else if(currentCommand.contains("#")) {
-            return currentCommand.substring(currentCommand.indexOf("#"), currentCommand.length()-1);
-        }else if(currentCommand.contains("r")){
-        	return currentCommand.substring(currentCommand.indexOf("r"), currentCommand.indexOf(("r")+ 1));
-        	
         } else return "INVALID INSTRUCTION";
     }
     
-	public String opcode(){
+	public boolean twoOperand(){ 	// check if two or three operand
+		String half = currentCommand.substring(currentCommand.indexOf(",") + 1, currentCommand.length());
+		
+		if(half.contains(",")){
+			return false;
+			}
+			
+		return true;
+	}
+	
+	public String opcode(){		//handles up code for dataprocess instruction 
 	 		return currentCommand.substring(0,3);
 	}
     
-	public String condition(){
-		   
-		   //checks for conditions
+	public String condition(){//checks for conditions
+		
 		   if(currentCommand.contains("EQ")) return "EQ";
 		   else if(currentCommand.contains("NE")) return "NE";
 		   else if(currentCommand.contains("HS")) return "HS";
@@ -94,18 +100,51 @@ public class Parser {
 		   return "";
 	 }
 	
-	public int sbit(){
-		 
-		String command = currentCommand.substring(currentCommand.indexOf("r") - 1);
+	public int ibit(){	//handles i bit
+		if (currentCommand.contains("#")) return 1;
+		return 0;
+	}
+	
+	public int sbit(){	 //handles sbit
+		String command = currentCommand.substring(currentCommand.indexOf("r")-1);
 		if(command.equals("S")) return 1;
 		 return 0;
 	 }
 	
-	public String rn(){
-		return null;
+	public String rn(){		//handles rn
+		return currentCommand.substring(currentCommand.indexOf(",")-2 , currentCommand.indexOf(","));
+	}
+	
+	public String rd(){		//handles rd 
+		
+		if(currentCommand.contains("#")){
+			return currentCommand.substring(currentCommand.indexOf("#"),currentCommand.length());
+		}else
+		return currentCommand.substring(currentCommand.indexOf(",")+1 , (!twoOperand())?currentCommand.lastIndexOf(","):currentCommand.length());
+	}
+	
+	public String operand2(){		//handles operand
+		
+		if(currentCommand.contains("#")){
+			return currentCommand.substring(currentCommand.indexOf("#"),currentCommand.length());
+		}else
+	
+		return currentCommand.substring(currentCommand.lastIndexOf(",")+1,currentCommand.length());
+	}
+	
+	public int lBit(){	//handle LBit for BRANCH INSTRUCTION
+		
+		if(currentCommand.contains("L")) return 1;
+		
+		return 0;
+	}
+	
+	public int offset(){ //handles offset for BRANCH INSTRUCTION
+	
+		return 0;
 	}
 	 
-    public void removeWhitespace(File input) throws FileNotFoundException {
+    public void removeWhitespace(File input) throws FileNotFoundException {			//Handles whitespaces
         try {
             Scanner in = new Scanner(input);
 
@@ -117,9 +156,9 @@ public class Parser {
                 for(int i = 0; i < line.length; i++) {
                     if(line.length == 0) {                                  // ignores empty lines
                         break;
-                    } else if(line[i].length() > 1 && line[i].substring(0, 2).equals("//") && i != 0) {
-                        break;                                              // ignores inline comments
-                    } else if(line[i].length() > 1 && line[i].substring(0, 2).equals("//") && i == 0) {
+                    } else if(line[i].length() > 1 && line[i].substring(0,2).equals("//") && i != 0) {
+                        break;                                              // ignoes inline comments
+                    } else if(line[i].length() > 1 && line[i].substring(0,2).equals("//") && i == 0) {
                         break;                                              // ignores whole-line comments
                     }  else {
                         command += line[i];
@@ -136,4 +175,5 @@ public class Parser {
             throw new FileNotFoundException();
         }
     }
+   
 }

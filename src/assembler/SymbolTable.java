@@ -40,7 +40,7 @@ public class SymbolTable {
     private void firstPass() {
         while(true) {
             if(p.commandType().equals("L_COMMAND")) {
-//                symbols.put(p.symbol(), currentLineNumber);
+                symbols.put(p.symbol(), currentLineNumber);
             } else currentLineNumber++;
 
             if(p.hasMoreCommands()) {
@@ -64,12 +64,8 @@ public class SymbolTable {
     public int getAddress(String symbol) {
     	
     	if(symbol.contains("#")){
-    	
-    		BigInteger stat = new BigInteger(symbol.substring(symbol.indexOf(1), symbol.length()-1));
-    		
-    		return stat.intValue();
+    		return Integer.parseInt(Integer.toBinaryString(Integer.parseInt(symbol.substring(symbol.indexOf("#")+1, symbol.length()))));
     	}
-    	
         return symbols.get(symbol);
     }
 }
