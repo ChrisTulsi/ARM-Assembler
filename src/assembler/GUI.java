@@ -220,37 +220,56 @@ public class GUI extends JFrame implements ActionListener{
 								writeHex.close();
 								return;
 						}
-					}else if (p.commandType().equals("BRANCH_COMMAND")) {//handles Branch command
+					}else if (p.commandType().equals("BRANCH_INSTRUCTION")) {//handles Branch command
 						
 						BigInteger machine = BigInteger.ZERO;
 						BigInteger sum = BigInteger.ZERO;
 						
 						int condition = Code.condition(p.condition());
 						int constant = 101;
-						int lBit = 0;
+						int lBit = p.lBit();
+						int offset = st.getAddress(p.offset());
+						
+						
+						machine = sum;
+						sum = machine.add(leftShift(condition,28));
+						machine = sum;
+						sum = machine.add(leftShift(constant,25));
+						machine = sum;
+						sum = machine.add(leftShift(lBit,24));
+						machine = sum;
+						sum = machine.add(rightShift(offset,2));
+						machine = sum;
+						
+						String bin = appendString(sum);
+						
+						writeOut.println(bin);
+						writeHex.println(binToHex(bin));
+						
+						currentInstruction++;
+						
+					}	else if(p.commandType().equals("LOAD_STORE_INSTRUCTION")) {
+
+						BigInteger machine = BigInteger.ZERO;
+						BigInteger sum = BigInteger.ZERO;
+						
+						int condition = Code.condition(p.condition());
+						int constant = 1;
+						int ibit = 0;
+						int pbit = 0;
+						int ubit = 0;
+						int bbit = 0;
+						int wbit = 0;
+						int lbit = 0;
+						int rn = 0;
+						int rd = 0;
 						int offset = 0;
-						
-						
-//						machine = sum;
-//						sum = machine.add(leftShift(condition,28));
-//						machine = sum;
-//						sum = machine.add(leftShift(constant,21));
-//						machine = sum;
-//						sum = machine.add(leftShift(lBit,20));
-//						machine = sum;
-//						sum = machine.add(leftShift(offset,19));
-//						machine = sum;
-//						
-//						String bin = appendString(sum);
-//						
-//						writeOut.println(bin);
-//						writeHex.println(binToHex(bin));
 						
 						currentInstruction++;
 						
 					}	else { // handles invalid instructions
 						System.out.println("Error at instruction "
-								+ currentInstruction + " of .asm file.");
+								+ currentInstruction + " of .outfile.");
 						System.out
 								.println("Resulting .out file is incomplete.");
 						writeOut.close();

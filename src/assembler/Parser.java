@@ -42,17 +42,24 @@ public class Parser {
     public String commandType() {
     	
     	String command = currentCommand.substring(0,3);
-    	
-    	if(command.equals("AND") || command.equals("EOR") || command.equals("SUB") || command.equals("RSB") ||
+    	if(currentCommand.endsWith(":")){
+    		
+    		return "L_COMMAND";
+    		
+    	}else if(command.equals("AND") || command.equals("EOR") || command.equals("SUB") || command.equals("RSB") ||
     			command.equals("ADD") || command.equals("ADC") || command.equals("SBC") || command.equals("RSC") ||
     			command.equals("TST") || command.equals("TEQ") || command.equals("CMP") || command.equals("CMN") ||
     			command.equals("ORR") || command.equals("MOV") || command.equals("BIC") || command.equals("MVN")){
     	
     		return "DATA_PROCESS_COMMAND";
     	
-    	}	else if (command.startsWith("B")){
-    		return "BRANCH_INSTRUCTION";
+    	}	else if (command.startsWith("B")){ return "BRANCH_INSTRUCTION";
+    	
+    	}	else if(command.equals("LDT") || command.equals("")){ return "LOAD_STORE_INSTRUCTION";    		
+    		
     	}
+    	
+    		
             return "INVALID INSTRUCTION";
         
     }
@@ -139,9 +146,13 @@ public class Parser {
 		return 0;
 	}
 	
-	public int offset(){ //handles offset for BRANCH INSTRUCTION
-	
-		return 0;
+	public String offset(){ //handles offset for BRANCH INSTRUCTION
+		int i = 0;
+		while(Character.isUpperCase(currentCommand.charAt(i))){
+			i++;
+		}
+		System.out.println(currentCommand.substring(i, currentCommand.length()));
+		return currentCommand.substring(i, currentCommand.length());
 	}
 	 
     public void removeWhitespace(File input) throws FileNotFoundException {			//Handles whitespaces
